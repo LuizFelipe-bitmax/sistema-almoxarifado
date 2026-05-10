@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Almoxarifado</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<!-- ═══ LOGIN ═══════════════════════════════════════════ -->
+<div id="login-wrap" class="login-screen">
+  <div class="login-logo">
+    <i class="ti ti-package"></i>
+    <h1>Almoxarifado</h1>
+    <p>Controle de estoque</p>
+  </div>
+  <div class="login-card">
+    <div class="form-group">
+      <label>Usuário</label>
+      <select id="login-user">
+        <option value="">Selecione...</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Senha</label>
+      <input type="password" id="login-pass" placeholder="••••••">
+    </div>
+    <div id="login-erro" class="erro-msg" style="display:none"></div>
+    <button class="btn btn-primary" onclick="App.login()">
+      <i class="ti ti-login"></i> Entrar
+    </button>
+  </div>
+</div>
+
+<!-- ═══ APLICATIVO ══════════════════════════════════════ -->
+<div id="main-wrap" style="display:none">
+
+  <div class="topbar">
+    <span class="topbar-title" id="screen-title">📦 Início</span>
+    <div class="topbar-user">
+      <span id="user-cargo"></span>
+      <div class="avatar" id="user-avatar">?</div>
+    </div>
+  </div>
+
+  <div class="app">
+
+    <!-- INÍCIO -->
+    <div class="screen active" id="s-home">
+      <div id="alerts-container"></div>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-label">Materiais</div><div class="stat-val blue" id="stat-total">—</div></div>
+        <div class="stat-card"><div class="stat-label">Alertas</div><div class="stat-val red" id="stat-alerts">—</div></div>
+        <div class="stat-card"><div class="stat-label">Entradas hoje</div><div class="stat-val green" id="stat-ent">—</div></div>
+        <div class="stat-card"><div class="stat-label">Saídas hoje</div><div class="stat-val warn" id="stat-sai">—</div></div>
+      </div>
+      <div class="quick-btns">
+        <button class="quick-btn entrada-btn" onclick="App.goTo('s-entrada')">
+          <i class="ti ti-circle-plus"></i>Registrar Entrada
+        </button>
+        <button class="quick-btn saida-btn" onclick="App.goTo('s-saida')">
+          <i class="ti ti-circle-minus"></i>Registrar Saída
+        </button>
+        <button class="quick-btn hist-btn" onclick="App.goTo('s-hist')">
+          <i class="ti ti-history"></i>Histórico
+        </button>
+        <button class="quick-btn mat-btn" onclick="App.goTo('s-materiais')">
+          <i class="ti ti-archive"></i>Materiais
+        </button>
+      </div>
+      <div class="section-title">Estoque atual</div>
+      <div class="card" id="home-stock-list"><div class="loading">Carregando...</div></div>
+    </div>
+
+    <!-- ENTRADA -->
+    <div class="screen" id="s-entrada">
+      <div class="card">
+        <div class="form-group">
+          <label>Material</label>
+          <select id="ent-mat" onchange="App.updateSaiInfo()"></select>
+        </div>
+        <div class="form-group">
+          <label>Quantidade</label>
+          <input type="number" id="ent-qty" min="1" value="1">
+        </div>
+        <div class="form-group">
+          <label>Turno</label>
+          <select id="ent-turno">
+            <option>Comercial</option><option>Turno 1</option>
+            <option>Turno 2</option><option>Turno 3</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Observação (opcional)</label>
+          <input type="text" id="ent-obs" placeholder="Ex: Compra mensal">
+        </div>
+        <button class="btn btn-success" onclick="App.registrarEntrada()">
+          <i class="ti ti-check"></i> Confirmar Entrada
+        </button>
+      </div>
+    </div>
+
+    <!-- SAÍDA -->
+    <div class="screen" id="s-saida">
+      <div class="card">
+        <div class="form-group">
+          <label>Material</label>
+          <select id="sai-mat" onchange="App.updateSaiInfo()"></select>
+        </div>
+        <div class="form-group" id="sai-estoque-info" style="display:none">
+          <div class="info-box">
+            Em estoque: <span id="sai-estoque-atual" style="font-weight:700"></span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Quantidade</label>
+          <input type="number" id="sai-qty" min="1" value="1">
+        </div>
+        <div class="form-group">
+          <label>Turno</label>
+          <select id="sai-turno">
+            <option>Comercial</option><option>Turno 1</option>
+            <option>Turno 2</option><option>Turno 3</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Observação (opcional)</label>
+          <input type="text" id="sai-obs" placeholder="Ex: Retirada para limpeza">
+        </div>
+        <button class="btn btn-danger" onclick="App.registrarSaida()">
+          <i class="ti ti-minus"></i> Confirmar Saída
+        </button>
+      </div>
+    </div>
+
+    <!-- HISTÓRICO -->
+    <div class="screen" id="s-hist">
+      <div class="filter-row" id="hist-filters">
+        <button class="filter-chip active" onclick="App.filterHist('todos',this)">Todos</button>
+        <button class="filter-chip" onclick="App.filterHist('entrada',this)">Entradas</button>
+        <button class="filter-chip" onclick="App.filterHist('saida',this)">Saídas</button>
+        <button class="filter-chip" onclick="App.filterHist('ajuste',this)">Ajustes</button>
+      </div>
+      <div class="card" id="hist-list"><div class="loading">Carregando...</div></div>
+    </div>
+
+    <!-- MATERIAIS -->
+    <div class="screen" id="s-materiais">
+      <div class="section-title">Materiais cadastrados</div>
+      <div class="card" id="mat-list-card"><div class="loading">Carregando...</div></div>
+      <div class="divider"></div>
+      <div class="section-title">Cadastrar novo material</div>
+      <div class="card">
+        <div class="form-group">
+          <label>Nome do material</label>
+          <input type="text" id="new-mat-nome" placeholder="Ex: Detergente">
+        </div>
+        <div class="form-group">
+          <label>Estoque inicial</label>
+          <input type="number" id="new-mat-qty" min="0" value="0">
+        </div>
+        <div class="form-group">
+          <label>Estoque mínimo</label>
+          <input type="number" id="new-mat-min" min="0" value="5">
+        </div>
+        <button class="btn btn-primary" onclick="App.cadastrarMaterial()">
+          <i class="ti ti-plus"></i> Cadastrar Material
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /app -->
+
+  <!-- NAV -->
+  <nav class="nav">
+    <button class="nav-btn active" onclick="App.goTo('s-home')" id="nav-s-home">
+      <i class="ti ti-home-2"></i><span>Início</span>
+    </button>
+    <button class="nav-btn" onclick="App.goTo('s-entrada')" id="nav-s-entrada">
+      <i class="ti ti-circle-plus"></i><span>Entrada</span>
+    </button>
+    <button class="nav-btn" onclick="App.goTo('s-saida')" id="nav-s-saida">
+      <i class="ti ti-circle-minus"></i><span>Saída</span>
+    </button>
+    <button class="nav-btn" onclick="App.goTo('s-hist')" id="nav-s-hist">
+      <i class="ti ti-history"></i><span>Histórico</span>
+    </button>
+    <button class="nav-btn" onclick="App.goTo('s-materiais')" id="nav-s-materiais">
+      <i class="ti ti-archive"></i><span>Materiais</span>
+    </button>
+  </nav>
+
+</div><!-- /main-wrap -->
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- MODAL AJUSTE -->
+<div class="modal-overlay" id="ajuste-modal">
+  <div class="modal">
+    <div class="modal-title">
+      Ajuste de estoque
+      <button class="close-btn" onclick="App.closeModal()">
+        <i class="ti ti-x"></i>
+      </button>
+    </div>
+    <div class="form-group">
+      <label>Material</label>
+      <input type="text" id="ajuste-mat-nome" readonly>
+    </div>
+    <div class="form-group">
+      <label>Quantidade atual</label>
+      <input type="number" id="ajuste-atual" readonly>
+    </div>
+    <div class="form-group">
+      <label>Nova quantidade</label>
+      <input type="number" id="ajuste-nova" min="0">
+    </div>
+    <div class="form-group">
+      <label>Motivo do ajuste</label>
+      <input type="text" id="ajuste-motivo" placeholder="Ex: Contagem física do fechamento">
+    </div>
+    <button class="btn btn-primary" onclick="App.confirmarAjuste()">Confirmar ajuste</button>
+  </div>
+</div>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>
