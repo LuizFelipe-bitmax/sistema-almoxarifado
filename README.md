@@ -124,12 +124,3 @@ O sistema estará disponível em: **http://localhost:8000**
 
 ---
 
-## 🔮 Próximos passos (Fase 2 e 3)
-
-- [ ] Filtros por data e por usuário no histórico
-- [ ] Exportar histórico em PDF
-- [ ] Dashboard com gráficos de consumo
-- [ ] Notificações por WhatsApp ou e-mail
-- [ ] QR Code por material
-- [ ] Migração para PostgreSQL
-- [ ] Deploy em servidor (Railway, Render, VPS)
